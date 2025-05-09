@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - FutureHub</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter and Space Grotesk -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <!-- GSAP for animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <!-- Particles.js for background effects -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+	<!-- Fuse.js -->
+	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+	<!-- General scripts.js (includes showNotification) -->
+  <script src="../js/scripts.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(135deg, #0a0e1a 0%, #1e1e2f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Particles Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    /* Glassmorphism Container */
+    .offline-container {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 3rem;
+      max-width: 550px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      z-index: 10;
+      transform: perspective(1000px) rotateX(5deg);
+      transition: transform 0.3s ease;
+    }
+    .offline-container:hover {
+      transform: perspective(1000px) rotateX(0deg);
+    }
+    .offline-container i {
+      font-size: 5rem;
+      color: #7c3aed;
+      margin-bottom: 1.5rem;
+      display: block;
+      text-shadow: 0 0 15px rgba(124, 58, 237, 0.8), 0 0 30px rgba(124, 58, 237, 0.6);
+      animation: neonGlow 1.5s ease-in-out infinite alternate;
+    }
+    .offline-container h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #00ddeb;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px rgba(0, 221, 235, 0.5);
+    }
+    .offline-container p {
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+    .offline-container .retry-btn {
+      background: linear-gradient(45deg, #7c3aed, #00ddeb);
+      color: #ffffff;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 15px rgba(0, 221, 235, 0.5);
+    }
+    .offline-container .retry-btn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.8), 0 0 30px rgba(0, 221, 235, 0.6);
+    }
+    .offline-container .retry-btn:active {
+      transform: translateY(0) scale(1);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    }
+    /* Neon Glow Animation */
+    @keyframes neonGlow {
+      from { text-shadow: 0 0 10px rgba(124, 58, 237, 0.8), 0 0 20px rgba(124, 58, 237, 0.6); }
+      to { text-shadow: 0 0 20px rgba(124, 58, 237, 1), 0 0 40px rgba(124, 58, 237, 0.8); }
+    }
+    /* Notification Styles (included for redundancy, but can rely on styles.css) */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: linear-gradient(45deg, #4caf50, #388e3c);
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      animation: bounceIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .notification.offline {
+      background: linear-gradient(45deg, #f44336, #d32f2f);
+    }
+    @keyframes bounceIn {
+      0% { transform: translateX(100%) scale(0.8); opacity: 0; }
+      60% { transform: translateX(0) scale(1.05); opacity: 1; }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { transform: translateX(100%) scale(0.8); opacity: 0; }
+    }
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      .offline-container {
+        padding: 2rem;
+        width: 95%;
+        transform: perspective(1000px) rotateX(0deg);
+      }
+      .offline-container h1 {
+        font-size: 2.2rem;
+      }
+      .offline-container p {
+        font-size: 1.1rem;
+      }
+      .offline-container i {
+        font-size: 4rem;
+      }
+      .offline-container .retry-btn {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Particles Background -->
+  <div id="particles-js"></div>
+
+  <!-- Offline Message -->
+  <div class="offline-container">
+    <i class="fas fa-wifi"></i>
+    <h1>Connection Lost</h1>
+    <p>Your internet connection seems to be offline. Check your network and try again.</p>
+    <button onclick="checkConnection()" class="retry-btn">Retry</button>
+  </div>
+
+  <script>
+    // Particles.js Configuration
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: ['#7c3aed', '#00ddeb'] },
+        shape: { type: 'circle' },
+        opacity: { value: 0.6, random: true },
+        size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: '#7c3aed', opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 3, direction: 'none', random: true }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+        modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    // GSAP Animations
+    document.addEventListener('DOMContentLoaded', () => {
+      gsap.from('.offline-container', {
+        opacity: 0,
+        // y: 60,
+        duration: 1,
+        ease: 'power3.out'
+      });
+      gsap.from('.offline-container i', {
+        opacity: 0,
+        scale: 0.5,
+        duration: 0.8,
+        delay: 0.2,
+        ease: 'elastic.out(1, 0.5)'
+      });
+      gsap.from('.offline-container h1, .offline-container p, .offline-container .retry-btn', {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.2,
+        delay: 0.4,
+        ease: 'power2.out'
+      });
+      gsap.to('.offline-container i', {
+        y: -12,
+        repeat: -1,
+        yoyo: true,
+        duration: 1.8,
+        ease: 'sine.inOut'
+      });
+    });
+
+    // Check connection and redirect
+    function checkConnection() {
+      if (navigator.onLine) {
+        showNotification('You are back online!');
+        const lastPage = localStorage.getItem('lastPage') || 'index.html';
+        setTimeout(() => {
+          window.location.href = lastPage;
+        }, 1000);
+      } else {
+        const retryBtn = document.querySelector('.retry-btn');
+        retryBtn.textContent = 'No Connection';
+        retryBtn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
+        setTimeout(() => {
+          retryBtn.textContent = 'Retry';
+          retryBtn.style.background = 'linear-gradient(45deg, #7c3aed, #00ddeb)';
+        }, 2000);
+      }
+    }
+
+    // Auto-check when coming back online
+    window.addEventListener('online', () => {
+      showNotification('You are back online!');
+      const lastPage = localStorage.getItem('lastPage') || 'index.html';
+      setTimeout(() => {
+        window.location.href = lastPage;
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A futuristic hub for curated resources in programming, design, tools, and learning. Explore YouTube channels, books, websites, images, and more.">
+  <meta property="og:title" content="FutureHub | Curated Resources">
+  <meta property="og:description" content="Discover curated resources for programming, design, and more.">
+  <meta property="og:image" content="/og-image.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>FutureHub | Curated Resources</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <!-- Google Fonts: Inter and Space Grotesk -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <style>
+    /* Welcome Overlay Styles */
+    .welcome-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .welcome-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .welcome-message {
+      background: linear-gradient(135deg, #1e1e2f 0%, #2a2a4a 100%);
+      border-radius: 15px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .welcome-overlay.active .welcome-message {
+      animation: slideIn 0.6s ease forwards;
+    }
+
+    .welcome-overlay .welcome-message {
+      animation: slideOut 0.6s ease forwards;
+      animation-play-state: paused;
+    }
+
+    .welcome-overlay:not(.active) .welcome-message {
+      animation-play-state: running;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideOut {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-50px); opacity: 0; }
+    }
+
+    .welcome-message h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00ddeb;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+    }
+
+    .welcome-message p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-message .close-btn {
+      background: #00ddeb;
+      color: #1e1e2f;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+    }
+
+    .welcome-message .close-btn:hover {
+      background: #00b7c3;
+      transform: translateY(-2px);
+    }
+
+    /* Navbar Guide Link */
+    .navbar a.guide-link {
+      text-decoration: none;
+      margin: 0 0.5rem;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .navbar a.guide-link:hover,
+    .navbar a.guide-link.active {
+      color: #00ddeb;
+    }
+
+    .navbar .guide-link i {
+      font-size: 1.2rem;
+    }
+
+    /* Connect Section Styles */
+		.connect-section {
+			margin-top: 1rem;
+			padding: 4rem 1rem;
+			background: linear-gradient(180deg, #1e1e2f 0%, #2a2a4a 100%);
+		}
+		.connect-container {
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+		.connect-card {
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+			border-radius: 15px;
+			padding: 2rem;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+		}
+		.connect-profile {
+			text-align: center;
+		}
+		.profile-img {
+			width: 120px;
+			height: 120px;
+			border-radius: 50%;
+			object-fit: cover;
+			margin-bottom: 1rem;
+			border: 2px solid #00ddeb;
+		}
+		.connect-profile h3 {
+			font-family: 'Space Grotesk', sans-serif;
+			font-size: 1.8rem;
+			color: #00ddeb;
+			margin-bottom: 0.5rem;
+		}
+		.connect-profile p {
+			font-family: 'Inter', sans-serif;
+			font-size: 1rem;
+			color: #ffffff;
+			line-height: 1.6;
+			max-width: 500px;
+			margin: 0 auto;
+		}
+		.connect-links {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 1.5rem;
+		}
+		.links-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+		.links-group h4 {
+			font-family: 'Space Grotesk', sans-serif;
+			font-size: 1.2rem;
+			color: #00ddeb;
+			margin-bottom: 0.5rem;
+		}
+		.links-group a {
+			font-family: 'Inter', sans-serif;
+			font-size: 1rem;
+			color: #ffffff;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.5rem;
+			border-radius: 5px;
+			transition: background 0.3s ease, transform 0.3s ease;
+			transform: translate(0) !important;
+		}
+		.links-group a:hover {
+			background: rgba(0, 221, 235, 0.2);
+			transform: translateX(5px);
+		}
+		.links-group a i {
+			font-size: 1.2rem;
+			color: #00ddeb;
+		}
+		@media (max-width: 768px) {
+			.connect-card {
+				padding: 1.5rem;
+			}
+			.connect-links {
+				grid-template-columns: 1fr;
+			}
+			.profile-img {
+				width: 100px;
+				height: 100px;
+			}
+			.connect-profile h3 {
+				font-size: 1.5rem;
+			}
+			.connect-profile p {
+				font-size: 0.9rem;
+			}
+		}
+		.light-mode .connect-section {
+			background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+		}
+		.light-mode .connect-card {
+			background: rgba(255, 255, 255, 0.7);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		}
+		.light-mode .connect-profile h3 {
+			color: #0077b6;
+		}
+		.light-mode .connect-profile p {
+			color: #333333;
+		}
+		.light-mode .links-group h4 {
+			color: #0077b6;
+		}
+		.light-mode .links-group a {
+			color: #333333;
+		}
+		.light-mode .links-group a:hover {
+			background: rgba(0, 119, 182, 0.2);
+		}
+		.light-mode .links-group a i {
+			color: #0077b6;
+		}
+  </style>
+	<!-- <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "FutureHub",
+    "url": "https://futurehub.example.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://futurehub.example.com/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script> -->
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="max-w-7xl">
+      <div class="logo">
+        <a href="#">FutureHub</a>
+      </div>
+      <div class="theme-toggle">
+        <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+      </div>
+      <div class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="bookmarks.html" class="nav-link">My Bookmarks</a></li>
+        <li><a href="#youtube" class="nav-link">YouTube</a></li>
+        <li><a href="#books" class="nav-link">Books</a></li>
+        <li><a href="#references" class="nav-link">References</a></li>
+        <li><a href="#images" class="nav-link">Images</a></li>
+        <li><a href="#tools" class="nav-link">Tools</a></li>
+        <li><a href="#" class="guide-link" onclick="showWelcomeOverlay()"><i class="fas fa-info-circle"></i> Guide</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-overlay">
+      <h1>Discover the Future of Learning</h1>
+      <p>Curated resources to master programming, design, and more.</p>
+      <div class="search-bar" role="search">
+        <select id="category-filter" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+          <optgroup label="Programming">
+            <option value="programming">Programming</option>
+            <option value="arabic-programming">Arabic Programming</option>
+            <option value="code-editors">Code Editors</option>
+          </optgroup>
+          <optgroup label="Design">
+            <option value="design">Design</option>
+            <option value="free-images">Free Images</option>
+            <option value="premium-images">Premium Images</option>
+          </optgroup>
+          <optgroup label="Education">
+            <option value="english-learning">English Learning</option>
+            <option value="arabic-education">Arabic Education</option>
+            <option value="education">Education</option>
+          </optgroup>
+          <optgroup label="Tools">
+            <option value="tools">Tools</option>
+            <option value="ai-tools">AI Tools</option>
+            <option value="api-tools">API Tools</option>
+            <option value="chrome-extensions">Chrome Extensions</option>
+            <option value="ai-websites">AI Websites</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="productivity">Productivity</option>
+            <option value="content-creation">Content Creation</option>
+            <option value="trading">Trading</option>
+            <option value="references">References</option>
+          </optgroup>
+        </select>
+        <input
+          type="text"
+          id="resource-search"
+          placeholder="Search resources..."
+          aria-label="Search for resources"
+        >
+        <ul class="search-suggestions" role="listbox" aria-label="Search suggestions"></ul>
+        <div class="voice-search-container">
+          <select id="voice-lang" aria-label="Select voice search language">
+            <option value="ar-SA">Arabic</option>
+            <option value="en-US">English</option>
+          </select>
+          <button class="voice-search" aria-label="Start voice search">
+            <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+        <button class="clear-search" style="display: none;" aria-label="Clear search">
+          <i class="fas fa-times"></i>
+        </button>
+        <button class="search-button" aria-label="Search">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+
+			<button class="export-bookmarks-btn export-button" id="export-bookmarks" aria-label="Export bookmarks">
+				<i class="fas fa-download"></i> Export Bookmarks
+			</button>
+		</div>
+  </section>
+
+  <!-- Carousel Section -->
+  <section class="carousel-section star">
+    <div class="hero-box" role="banner" aria-label="Explore Playlists Section">
+      <div class="hero-content box">
+        <h2>Explore My Playlists</h2>
+        <p>Curate, Share, Inspire</p>
+        <div class="hero-stats" aria-live="polite">
+          <span><i class="fas fa-list"></i> <span class="card-count">0</span> Cards</span>
+          <span><i class="fas fa-tags"></i> <span class="tag-count">0</span> Tags</span>
+        </div>
+      </div>
+      <div class="hero-particles" id="particles-js"></div>
+    </div>
+    <div class="carousel-container">
+      <div class="carousel"></div>
+      <div class="carousel-nav">
+        <button class="carousel-arrow prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow next"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- YouTube Section -->
+  <section class="section youtube-section star" id="youtube">
+    <h2 class="section-title">Top YouTube Channels</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-star"></i> All</button>
+      <button class="filter-btn" data-filter="programming"><i class="fas fa-code"></i> Programming</button>
+      <button class="filter-btn" data-filter="arabic-programming"><i class="fas fa-laptop-code"></i> Arabic Programming</button>
+      <button class="filter-btn" data-filter="design"><i class="fas fa-paint-brush"></i> Design</button>
+      <button class="filter-btn" data-filter="english-learning"><i class="fas fa-book-open"></i> English Learning</button>
+      <button class="filter-btn" data-filter="education"><i class="fas fa-graduation-cap"></i> Education</button>
+      <button class="filter-btn" data-filter="arabic-education"><i class="fas fa-chalkboard-teacher"></i> Arabic Education</button>
+      <button class="filter-btn" data-filter="ai-tech"><i class="fas fa-robot"></i> AI & Tech</button>
+      <button class="filter-btn" data-filter="trading"><i class="fas fa-chart-line"></i> Trading</button>
+      <button class="filter-btn" data-filter="content-creation"><i class="fas fa-video"></i> Content Creation</button>
+      <button class="filter-btn" data-filter="productivity"><i class="fas fa-tasks"></i> Productivity</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="youtube-grid"></div>
+  </section>
+
+  <!-- Books Section -->
+  <section class="section books-section star" id="books">
+    <h2 class="section-title">Must-Read Books</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-th-large"></i> All</button>
+      <button class="filter-btn" data-filter="programming"><i class="fas fa-code"></i> Programming</button>
+      <button class="filter-btn" data-filter="design"><i class="fas fa-paint-brush"></i> Design</button>
+      <button class="filter-btn" data-filter="productivity"><i class="fas fa-tasks"></i> Productivity</button>
+      <button class="filter-btn" data-filter="ai-learning"><i class="fas fa-robot"></i> AI Learning</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="books-grid"></div>
+  </section>
+
+  <!-- References Section -->
+  <section class="section references-section star" id="references">
+    <h2 class="section-title">Reference Websites</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-th-large"></i> All</button>
+      <button class="filter-btn" data-filter="references"><i class="fas fa-book"></i> References</button>
+      <button class="filter-btn" data-filter="ai-websites"><i class="fas fa-robot"></i> AI Websites</button>
+      <button class="filter-btn" data-filter="social-media"><i class="fas fa-share-alt"></i> Social Media</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="references-grid"></div>
+  </section>
+
+  <!-- Images Section -->
+  <section class="section images-section star" id="images">
+    <h2 class="section-title">Image Resources</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-th-large"></i> All</button>
+      <button class="filter-btn" data-filter="free-images"><i class="fas fa-camera"></i> Free Images</button>
+      <button class="filter-btn" data-filter="premium-images"><i class="fas fa-dollar-sign"></i> Premium Images</button>
+      <button class="filter-btn" data-filter="analytics"><i class="fas fa-chart-line"></i> Analytics</button>
+      <button class="filter-btn" data-filter="social-media"><i class="fas fa-share-alt"></i> Social Media</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="images-grid"></div>
+  </section>
+
+  <!-- Tools Section -->
+  <section class="section tools-section star" id="tools">
+    <h2 class="section-title">Essential Tools</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-th-large"></i> All</button>
+      <button class="filter-btn" data-filter="development"><i class="fas fa-code"></i> Development</button>
+      <button class="filter-btn" data-filter="design"><i class="fas fa-paint-brush"></i> Design</button>
+      <button class="filter-btn" data-filter="productivity"><i class="fas fa-tasks"></i> Productivity</button>
+      <button class="filter-btn" data-filter="project-management"><i class="fas fa-project-diagram"></i> Project Management</button>
+      <button class="filter-btn" data-filter="email-management"><i class="fas fa-envelope-open-text"></i> Email Management</button>
+      <button class="filter-btn" data-filter="crm"><i class="fas fa-users"></i> CRM</button>
+      <button class="filter-btn" data-filter="automation"><i class="fas fa-robot"></i> Automation</button>
+      <button class="filter-btn" data-filter="collaboration"><i class="fas fa-users-cog"></i> Collaboration</button>
+      <button class="filter-btn" data-filter="scheduling"><i class="fas fa-calendar-alt"></i> Scheduling</button>
+      <button class="filter-btn" data-filter="office-suites"><i class="fas fa-file-alt"></i> Office Suites</button>
+      <button class="filter-btn" data-filter="note-taking"><i class="fas fa-sticky-note"></i> Note Taking</button>
+      <button class="filter-btn" data-filter="wikis"><i class="fas fa-book"></i> Wikis</button>
+      <button class="filter-btn" data-filter="web-conferencing"><i class="fas fa-video"></i> Web Conferencing</button>
+      <button class="filter-btn" data-filter="invoicing"><i class="fas fa-file-invoice-dollar"></i> Invoicing</button>
+      <button class="filter-btn" data-filter="email-marketing"><i class="fas fa-envelope"></i> Email Marketing</button>
+      <button class="filter-btn" data-filter="customer-services"><i class="fas fa-headset"></i> Customer Services</button>
+      <button class="filter-btn" data-filter="email-collaboration"><i class="fas fa-inbox"></i> Email Collaboration</button>
+      <button class="filter-btn" data-filter="finance"><i class="fas fa-dollar-sign"></i> Finance</button>
+      <button class="filter-btn" data-filter="it-help-desk"><i class="fas fa-life-ring"></i> IT Help Desk</button>
+      <button class="filter-btn" data-filter="customer-solutions"><i class="fas fa-lightbulb"></i> Customer Solutions</button>
+      <button class="filter-btn" data-filter="ecommerce"><i class="fas fa-shopping-cart"></i> Ecommerce</button>
+      <button class="filter-btn" data-filter="cms"><i class="fas fa-globe"></i> CMS</button>
+      <button class="filter-btn" data-filter="time-tracking"><i class="fas fa-stopwatch"></i> Time Tracking</button>
+      <button class="filter-btn" data-filter="analytics"><i class="fas fa-chart-line"></i> Analytics</button>
+      <button class="filter-btn" data-filter="social-media"><i class="fas fa-share-alt"></i> Social Media</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="tools-grid"></div>
+  </section>
+
+  <!-- Developer Tools Section -->
+  <section class="section star" id="devTools">
+    <h2 class="section-title">Developer Tools</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all"><i class="fas fa-th-large"></i> All</button>
+      <button class="filter-btn" data-filter="code-editors"><i class="fas fa-code"></i> Code Editors</button>
+      <button class="filter-btn" data-filter="chrome-extensions"><i class="fab fa-chrome"></i> Chrome Extensions</button>
+      <button class="filter-btn" data-filter="ai-tools"><i class="fas fa-robot"></i> AI Tools</button>
+      <button class="filter-btn" data-filter="api-tools"><i class="fas fa-plug"></i> API Tools</button>
+      <button class="filter-btn" data-filter="design-tools"><i class="fas fa-paint-brush"></i> Design Tools</button>
+      <button class="filter-btn" data-filter="video-tools"><i class="fas fa-video"></i> Video Tools</button>
+      <button class="filter-btn" data-filter="audio-tools"><i class="fas fa-microphone"></i> Audio Tools</button>
+      <button class="filter-btn" data-filter="writing-tools"><i class="fas fa-pen"></i> Writing Tools</button>
+      <button class="filter-btn" data-filter="productivity"><i class="fas fa-tasks"></i> Productivity</button>
+    </div>
+    <div class="slider-container">
+      <div class="slider"></div>
+      <button class="slider-prev"><i class="fa fa-chevron-left"></i></button>
+      <button class="slider-next"><i class="fa fa-chevron-right"></i></button>
+      <div class="slider-controls">
+        <div class="slider-dots"></div>
+        <button class="slider-play-pause"><i class="fas fa-pause"></i></button>
+      </div>
+    </div>
+    <div class="cards-grid" id="devTools-grid"></div>
+  </section>
+
+  <!-- Connect Section -->
+  <section class="section connect-section" id="connect">
+    <h2 class="section-title">Connect with Me</h2>
+    <div class="connect-container">
+      <div class="connect-card">
+        <div class="connect-profile">
+          <img src="../assets/images/profile-placeholder.jpg" alt="Rebhe Ibrahim Profile" class="profile-img">
+          <h3>Rebhe A. Ibrahim</h3>
+          <p>Passionate developer and curator of tech resources. I build modern web solutions and share knowledge to empower learners worldwide.</p>
+        </div>
+        <div class="connect-links">
+          <div class="links-group">
+            <h4>Professional Profiles</h4>
+						<a href="https://github.com/rebhi-2002/Rebhe-Portfolio-2025" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i> Personal Website</a>
+            <a href="https://github.com/rebhi-2002" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://linkedin.com/in/rebhe-ibrahim-451504244" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+            <a href="https://www.upwork.com/freelancers/~01be8254101d97cbb1" target="_blank" rel="noopener noreferrer"><i class="fab fa-upwork"></i> Upwork</a>
+            <a href="https://www.freelancer.com/u/RebheIbrahim" target="_blank" rel="noopener noreferrer"><i class="fas fa-briefcase"></i> Freelancer</a>
+            <a href="https://mostaql.com/u/RebheIbrahim" target="_blank" rel="noopener noreferrer"><i class="fas fa-laptop-code"></i> Mostaql</a>
+            <a href="https://khamsat.com/user/rebheibrahim" target="_blank" rel="noopener noreferrer"><i class="fas fa-code"></i> Khamsat</a>
+          </div>
+          <div class="links-group">
+            <h4>Coding Communities</h4>
+            <a href="https://leetcode.com/u/rebhi-2002/" target="_blank" rel="noopener noreferrer"><i class="fas fa-code"></i> LeetCode</a>
+            <a href="https://dev.to/rebhe2002" target="_blank" rel="noopener noreferrer"><i class="fab fa-dev"></i> DEV Community</a>
+            <a href="https://codeforces.com/profile/rebheibrahim" target="_blank" rel="noopener noreferrer"><i class="fas fa-trophy"></i> Codeforces</a>
+            <a href="https://medium.com/@rebheibrahim" target="_blank" rel="noopener noreferrer"><i class="fab fa-medium"></i> Medium</a>
+            <a href="https://app.daily.dev/rebheibrahim" target="_blank" rel="noopener noreferrer"><i class="fas fa-newspaper"></i> daily.dev</a>
+            <a href="https://www.codewars.com/users/rebhi-2002" target="_blank" rel="noopener noreferrer"><i class="fas fa-code-branch"></i> Codewars</a>
+            <a href="https://www.geeksforgeeks.org/user/rebheibmc6k/" target="_blank" rel="noopener noreferrer"><i class="fas fa-book"></i> GeeksforGeeks</a>
+          </div>
+          <div class="links-group">
+            <h4>Social & Contact</h4>
+            <a href="https://wa.me/972597523575" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <a href="https://t.me/rebhe2002" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+            <a href="mailto:rebheibrahim@gmail.com"><i class="fas fa-envelope"></i> Email</a>
+            <a href="https://www.facebook.com/rebhi.ebraheem" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+            <a href="https://instagram.com/rebhe_ibrahim" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> Instagram</a>
+            <a href="https://twitter.com/rebhe_1643" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+					</div>
+
+          <div class="links-group">
+            <h4>Tech Communities</h4>
+            <a href="https://t.me/ReactAcademy2024" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> React Academy</a>
+            <a href="https://t.me/JavaScriptDevelopers2024" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> JavaScript Developers</a>
+						<a href="https://www.youtube.com/@rebhe2002" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> YouTube</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.connect-card', { opacity: 0, y: 50, duration: 1, ease: 'power3.out' });
+        gsap.from('.links-group a', { opacity: 0, x: -20, stagger: 0.1, duration: 0.8, ease: 'power2.out', delay: 0.5 });
+      });
+    </script>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="max-w-7xl">
+      <div class="footer-col">
+        <h3>About FutureHub</h3>
+        <p>Your go-to place for curated learning resources.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#home" class="footer-link"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="#youtube" class="footer-link"><i class="fab fa-youtube"></i> YouTube</a></li>
+          <li><a href="#books" class="footer-link"><i class="fas fa-book"></i> Books</a></li>
+          <li><a href="#references" class="footer-link"><i class="fas fa-link"></i> References</a></li>
+          <li><a href="#images" class="footer-link"><i class="fas fa-image"></i> Images</a></li>
+          <li><a href="#tools" class="footer-link"><i class="fas fa-tools"></i> Tools</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Contact</h3>
+        <p>Email: <a href="mailto:rebheibrahim@gmail.com" class="footer-link"><i class="fas fa-envelope"></i> rebheibrahim@gmail.com</a></p>
+        <div class="social-links">
+          <a href="https://twitter.com/rebhe_dev" class="footer-icon" aria-label="Twitter" rel="noopener noreferrer">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="https://github.com/rebhi-2002" class="footer-icon" aria-label="GitHub" rel="noopener noreferrer">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="sub-footer">
+      <p>© 2025 FutureHub. All rights reserved.</p>
+      <p class="designed-by">Designed by <a href="https://github.com/rebhi-2002/Rebhe-Portfolio-2025" class="footer-link inline-link" target="_blank" rel="noopener">Rebhe A. Ibrahim</a></p>
+    </div>
+  </footer>
+
+  <!-- Welcome Overlay -->
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-message">
+      <h2>Welcome to Our Resource Hub!</h2>
+      <p>
+        Start with the <strong>featured slider</strong> to explore curated resources. Dive into the <strong>grid</strong> for categorized cards, from YouTube tutorials to coding tools. <strong>Filter</strong> by category, <strong>bookmark</strong> favorites, and toggle <strong>dark mode</strong> for a cozy experience.
+      </p>
+      <button class="close-btn" onclick="closeWelcomeOverlay()">Got It!</button>
+    </div>
+  </div>
+
+  <!-- Control Orb -->
+  <div class="control-orb" id="controlOrb">
+    <i class="fas fa-star orb-icon"></i>
+  </div>
+  <div class="control-panel" id="controlPanel">
+    <button class="control-btn" id="toggleImages">Hide Images</button>
+    <button class="control-btn" id="clearBookmarks">Clear Bookmarks</button>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // // Service Worker Registration
+    // if ('serviceWorker' in navigator) {
+    //   window.addEventListener('load', () => {
+    //     navigator.serviceWorker.register('/sw.js')
+    //       .then(registration => console.log('Service Worker registered:', registration))
+    //       .catch(error => console.error('Service Worker registration failed:', error));
+    //   });
+    // }
+
+    // Welcome Overlay Logic
+    function showWelcomeOverlay() {
+      const overlay = document.getElementById('welcomeOverlay');
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.classList.add('active');
+        setTimeout(closeWelcomeOverlay, 10000);
+      }, 50);
+    }
+
+    function closeWelcomeOverlay() {
+      const overlay = document.getElementById('welcomeOverlay');
+      overlay.classList.remove('active');
+      setTimeout(() => overlay.style.display = 'none', 600);
+      localStorage.setItem('hasVisited', 'true');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('hasVisited')) {
+        setTimeout(showWelcomeOverlay, 500);
+      }
+
+      document.getElementById('welcomeOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeWelcomeOverlay();
+      });
+    });
+
+    // Voice Search Logic
+    const voiceLangSelect = document.getElementById('voice-lang');
+    const voiceButton = document.querySelector('.voice-search');
+    const searchInput = document.getElementById('resource-search');
+    const clearButton = document.querySelector('.clear-search');
+    const suggestions = document.querySelector('.search-suggestions');
+    const categoryFilter = document.getElementById('category-filter');
+
+    function showNotification(message) {
+      console.log(message); // Replace with actual notification system if needed
+    }
+
+    voiceButton.addEventListener('click', () => {
+      if (!('webkitSpeechRecognition' in window)) {
+        showNotification('Voice search is not supported in your browser.');
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = voiceLangSelect.value || 'ar-SA';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript.replace(/[\u0617-\u061A\u064B-\u065F]/g, '').replace(/[\u0622\u0623\u0625]/g, 'ا');
+        searchInput.value = transcript;
+        searchInput.dispatchEvent(new Event('input'));
+        showNotification('Recognized: ' + transcript);
+      };
+
+      recognition.onerror = event => {
+        const errors = {
+          'no-speech': 'No speech detected.',
+          'aborted': 'Search aborted.',
+          'audio-capture': 'Cannot access microphone.',
+          'network': 'Network error.'
+        };
+        showNotification('Voice search failed: ' + (errors[event.error] || event.error));
+      };
+
+      recognition.onend = () => voiceButton.classList.remove('active');
+      recognition.start();
+      voiceButton.classList.add('active');
+    });
+
+    // Search and Filter Logic
+    clearButton.addEventListener('click', () => {
+      searchInput.value = '';
+      clearButton.style.display = 'none';
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('active');
+      document.querySelectorAll('.resource-card').forEach(card => card.style.display = 'block');
+      categoryFilter.value = 'all';
+    });
+
+    categoryFilter.addEventListener('change', () => {
+      const filter = categoryFilter.value;
+      const query = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.resource-card').forEach(card => {
+        const matchesFilter = filter === 'all' || card.dataset.category === filter;
+        const matchesQuery = query === '' ||
+          card.querySelector('h4').textContent.toLowerCase().includes(query) ||
+          card.querySelector('p').textContent.toLowerCase().includes(query);
+        card.style.display = matchesFilter && matchesQuery ? 'block' : 'none';
+      });
+    });
+
+    // Suggestion Navigation
+    suggestions.addEventListener('keydown', e => {
+      const items = suggestions.querySelectorAll('li');
+      let index = Array.from(items).findIndex(item => item === document.activeElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        index = (index + 1) % items.length;
+        items[index].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        index = (index - 1 + items.length) % items.length;
+        items[index].focus();
+      } else if (e.key === 'Enter' && document.activeElement.tagName === 'LI') {
+        document.activeElement.click();
+      } else if (e.key === 'Escape') {
+        suggestions.classList.remove('active');
+        searchInput.focus();
+      }
+    });
+  </script>
+	<script src="../js/resources.js"></script>
+  <script src="../js/scripts.js"></script>
+  <script src="../js/control.js"></script>
+  <script src="../js/carousel.js"></script>
+	<script src="../js/data.js"></script>
+</body>
+</html>

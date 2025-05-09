@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookmarks</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+  <!-- <link rel="stylesheet" href="styles.css"> -->
+	<style>
+		/* Reset and Base Styles */
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		body {
+			color: #000 !important;
+			background-color: #eee !important;
+		}
+		body.dark {
+			color: rgb(243, 244, 246) !important;
+			background-color: rgb(17, 24, 39) !important;
+		}
+
+		/* Navigation Styles */
+		nav {
+			background-color: #FFF !important;
+		}
+		body.dark nav {
+			background-color: rgb(31, 41, 55) !important;
+		}
+		nav a.home {
+			color: #000 !important;
+		}
+		body.dark nav a.home {
+			color: rgb(229, 231, 235) !important;
+		}
+
+		/* Resource Card Styles */
+		.resource-card {
+			background-color: #FFF !important;
+			transition: transform 0.5s ease, box-shadow 0.5s ease;
+			min-height: 28rem;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+		body.dark .resource-card {
+			background-color: rgb(31, 41, 55) !important;
+		}
+		.resource-card:hover {
+			transform: translateY(-10px) scale(1.02) !important;
+			box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+		}
+		.resource-card.featured {
+			border: 2px solid #f59e0b;
+			position: relative;
+		}
+		.resource-card.featured::before {
+			content: 'Featured';
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			background: #f59e0b;
+			color: white;
+			padding: 2px 8px;
+			border-radius: 4px;
+			font-size: 0.75rem;
+			font-weight: bold;
+			z-index: 10;
+		}
+		.resource-card > div {
+			flex: 0 1 auto;
+		}
+		.resource-card .relative {
+			height: 12rem;
+			overflow: hidden;
+		}
+		.resource-card .relative img,
+		.resource-card .relative video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+		.resource-card p {
+			color: rgb(0, 0, 0) !important;
+		}
+		body.dark .resource-card p {
+			color: rgb(209, 213, 219) !important;
+		}
+		.resource-card .visit {
+			background-color: #5A9FFF !important;
+		}
+		body.dark .resource-card .visit {
+			background-color: rgb(55, 65, 81) !important;
+		}
+		.resource-card .p-4.flex-grow {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+		.resource-card .text-xs {
+			max-height: 6rem;
+			overflow: hidden;
+		}
+		.resource-card .bg-gray-50 {
+			flex: 0 0 auto;
+			height: 4rem;
+		}
+		/* Description Truncation */
+		.description {
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+		/* Bookmark Button Styles */
+			.bookmark-btn {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			width: 42px;
+			height: 42px;
+			transition: background-color 0.4s ease, color 0.4s ease, transform 0.3s ease;
+			border-radius: 50%;
+			background: #e5e7eb;
+			color: #374151;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.bookmark-btn.bookmarked {
+			color: rgb(252, 211, 77);
+		}
+		.bookmark-btn:hover {
+			color: #fff;
+			background: #4db6ac;
+			transform: scale(1.1);
+		}
+		.bookmark-btn:active {
+			animation: pulse 0.2s ease-out;
+		}
+		.bookmark-btn i {
+			font-size: 1.5rem;
+		}
+		@keyframes pulse {
+			0% { transform: scale(1); }
+			50% { transform: scale(1.2); }
+			100% { transform: scale(1); }
+		}
+		/* Tag Styles */
+		span.tag {
+			white-space: nowrap;
+		}
+		span.tag i {
+			margin: auto 5px auto -5px;
+		}
+		@media (min-width: 930px) {
+			span.tag {
+				white-space: nowrap;
+			}
+		}
+		/* Spinner Styles */
+		.spinner {
+			border: 4px solid rgba(0, 0, 0, 0.1);
+			border-left-color: #4f46e5;
+			border-radius: 50%;
+			width: 2rem;
+			height: 2rem;
+			animation: spin 1s linear infinite;
+		}
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+		/* Bookmarks Grid */
+			#bookmarksGrid {
+			margin: 60px auto;
+		}
+		/* Filter Tag Cloud Container */
+		.filter-tag-cloud-container {
+			position: relative;
+			margin-bottom: 20px;
+			padding: 20px;
+			background: rgba(249, 250, 251, 0.8);
+			backdrop-filter: blur(10px);
+			border-radius: 16px;
+			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+		}
+		body.dark .filter-tag-cloud-container {
+			background: rgba(31, 41, 55, 0.8);
+		}
+		/* Filter Search Bar */
+		.filter-search {
+			margin-bottom: 15px;
+			position: relative;
+		}
+		.filter-search input {
+			width: 100%;
+			padding: 10px 45px 10px 15px;
+			border-radius: 10px;
+			border: 1px solid rgba(209, 213, 219, 0.5);
+			background: rgba(255, 255, 255, 0.9);
+			color: #111827;
+			font-size: 0.95rem;
+			transition: all 0.3s ease;
+		}
+		body.dark .filter-search input {
+			border: rgba(75, 85, 99, 0.5);
+			background: rgba(55, 65, 81, 0.9);
+			color: #f3f4f6;
+		}
+		.filter-search input:focus {
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+		}
+		.filter-search i {
+			position: absolute;
+			right: 15px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: #6b7280;
+		}
+		/* Filter Tag Cloud */
+		.filter-tag-cloud {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+			gap: 10px;
+			padding: 10px 0;
+		}
+		/* Filter Button Styles */
+		.filter-btn {
+			position: relative;
+			padding: 10px 15px;
+			background: linear-gradient(135deg, rgba(79, 70, 229, 0.8) 0%, rgba(59, 130, 246, 0.8) 100%);
+			color: #fff;
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.9rem;
+			font-weight: 500;
+			backdrop-filter: blur(5px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+			cursor: pointer;
+			animation: fadeIn 0.5s ease-out;
+			overflow: hidden;
+			/* box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1), -5px -5px 10px rgba(255, 255, 255, 0.5); */
+		}
+		.filter-btn::after {
+			content: '';
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			background: rgba(255, 255, 255, 0.3);
+			border-radius: 50%;
+			transform: scale(0);
+			top: 0;
+			left: 0;
+			transform: translate(-50%, -50%);
+			transition: transform 0.3s ease;
+		}
+		.filter-btn i {
+			margin-right: 8px;
+		}
+		.filter-btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+			background: linear-gradient(135deg, rgba(79, 70, 229, 1) 0%, rgba(59, 130, 246, 1) 100%);
+		}
+		.filter-btn.active {
+			background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+			transform: scale(1.05);
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+			animation: pulseActive 1s infinite ease-in-out;
+		}
+		@keyframes fadeIn {
+			from { opacity: 0; transform: translateY(10px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+		@keyframes pulseActive {
+			0% { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); }
+			50% { box-shadow: 0 8px 16px rgba(245, 158, 11, 0.5); }
+			100% { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); }
+		}
+		/* Notification Styles */
+		.notification {
+			position: fixed;
+			top: 1rem;
+			right: 1rem;
+			background: #4db6ac;
+			color: #fff;
+			padding: 1rem 2rem;
+			border-radius: 8px;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+			z-index: 1000;
+			animation: bounceIn 0.3s ease-out, fadeOut 0.5s ease-in 4.5s forwards !important; /* Changed from 0.3s to 0.5s fadeOut, delayed by 4.5s */
+		}
+		@keyframes bounceIn {
+			0% { transform: translateX(100%) scale(0.8); opacity: 0; }
+			60% { transform: translateX(0) scale(1.05); opacity: 1; }
+			100% { transform: translateX(0) scale(1); opacity: 1; }
+		}
+		@keyframes fadeOut {
+			to { transform: translateX(100%) scale(0.8); opacity: 0; }
+		}
+		/* Bookmark Actions Container */
+		.bookmark-actions {
+			display: flex;
+			gap: 15px;
+			margin: 20px 0;
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+		/* Base Button Styles (Export and Import) */
+		.btn-export,
+		.btn-import {
+			padding: 12px 24px;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			font-size: 16px;
+			font-weight: 500;
+			font-family: Arial, sans-serif;
+			text-align: center;
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(8px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease;
+		}
+		/* Export Button */
+		.btn-export {
+			background: linear-gradient(45deg, #ffca28, #f57c00);
+			color: #fff;
+		}
+		/* Import Button */
+		.btn-import {
+			background: linear-gradient(45deg, #0288d1, #4fc3f7);
+			color: #fff;
+		}
+		/* Button Hover States */
+		.btn-export:hover,
+		.btn-import:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+			background: linear-gradient(45deg, #ffe082, #ff9800);
+		}
+		.btn-import:hover {
+			background: linear-gradient(45deg, #4fc3f7, #81d4fa);
+		}
+		/* Button Active States */
+		.btn-export:active,
+		.btn-import:active {
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+		}
+		/* Button Focus States */
+		.btn-export:focus,
+		.btn-import:focus {
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(255, 202, 40, 0.5);
+		}
+		.btn-import:focus {
+			box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.5);
+		}
+		/* Button Disabled States */
+		.btn-export:disabled,
+		.btn-import:disabled {
+			background: linear-gradient(45deg, #bdbdbd, #9e9e9e);
+			color: #e0e0e0;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+		}
+		/* Modal Styles */
+		.modal {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+			z-index: 1000;
+			text-align: center;
+			font-family: Arial, sans-serif;
+			color: #fff;
+			min-width: 300px;
+			max-width: 400px;
+			opacity: 0;
+			transition: opacity 0.3s ease, transform 0.3s ease;
+		}
+		.modal[style*="block"] {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+		.modal p {
+			margin: 0 0 20px;
+			font-size: 18px;
+			line-height: 1.5;
+		}
+		.modal.success p {
+			color: #4caf50;
+		}
+		.modal.error p {
+			color: #f44336;
+		}
+		/* Modal Buttons */
+		.modal button {
+			padding: 10px 20px;
+			margin: 0 10px;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 16px;
+			font-weight: 500;
+			transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+		}
+		.modal-yes {
+			background: linear-gradient(45deg, #ffca28, #f57c00);
+			color: #fff;
+		}
+		.modal-no {
+			background: linear-gradient(45deg, #d32f2f, #f44336);
+			color: #fff;
+		}
+		.modal-yes:hover {
+			background: linear-gradient(45deg, #ffe082, #ff9800);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(245, 124, 0, 0.4);
+		}
+		.modal-no:hover {
+			background: linear-gradient(45deg, #ef5350, #f8877f);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+		}
+		.modal-yes:active,
+		.modal-no:active {
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+		}
+		.modal-yes:focus,
+		.modal-no:focus {
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(255, 202, 40, 0.5);
+			}
+		.modal-no:focus {
+			box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.5);
+		}
+		.modal-yes:disabled,
+		.modal-no:disabled {
+			background: linear-gradient(45deg, #bdbdbd, #9e9e9e);
+			color: #e0e0e0;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+		}
+		.modal-close {
+			position: absolute;
+			top: -18px;
+			right: -28px;
+			background: red;
+			border: none;
+			color: #fff;
+			font-size: 1.4rem !important;
+			cursor: pointer;
+			width: 35px;
+			height: 35px;
+			border-radius: 50% !important;
+		}
+		.modal-close:hover {
+			color: #f44336;
+			background: #fff;
+		}
+		/* Responsive Styles */
+		@media (max-width: 640px) {
+			.resource-card {
+				width: 100%;
+				min-height: 30rem;
+			}
+			.filter-tag-cloud {
+				grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+			}
+			.filter-btn {
+				font-size: 0.85rem;
+				padding: 8px 12px;
+			}
+			.filter-tag-cloud-container {
+				padding: 15px;
+			}
+		}
+		@media (max-width: 480px) {
+			.bookmark-actions {
+				flex-direction: column;
+				align-items: center;
+			}
+			.btn-export,
+			.btn-import {
+				width: 100%;
+				max-width: 300px;
+			}
+			.modal {
+				min-width: 80%;
+				padding: 15px;
+			}
+			.modal p {
+				font-size: 16px;
+			}
+			.modal button {
+				padding: 8px 16px;
+				font-size: 14px;
+			}
+		}
+	</style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+  <!-- Navbar -->
+  <nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <div class="flex space-x-4">
+        <a href="index.html" class="home text-lg font-semibold text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">Home</a>
+        <a href="bookmarks.html" class="text-lg font-semibold text-indigo-600 dark:text-indigo-400">Bookmarks</a>
+      </div>
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<div class="bookmark-actions flex justify-between items-center my-4 p-4">
+			<button id="exportBookmarksBtn" class="btn-export"><i class="fas fa-file-export me-2"></i> Export Bookmarks</button>
+			<label for="importBookmarksInput" class="btn-import"><i class="fas fa-file-import me-2"></i> Import Bookmarks</label>
+			<input type="file" id="importBookmarksInput" accept="application/json" style="display: none;">
+		</div>
+		<!-- Add the modal here -->
+	  <div id="confirmModal" class="modal my-2 p-2">
+		  <p class="text-gray-600">Do you want to import bookmarks?</p>
+		  <button class="modal-close flex justify-center items-center absolute top-1/2-translate-y-1/2">✖</button>
+		  <button class="modal-yes">Yes</button>
+		  <button class="modal-no">No</button>
+		</div>
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold mb-4 sm:mb-0">My Bookmarks</h1>
+      <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+        <div class="relative w-full sm:w-64">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search bookmarks..."
+            class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <button id="clearBookmarks" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+          Clear All Bookmarks
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Tag Cloud -->
+    <div class="filter-tag-cloud-container">
+      <div class="filter-search">
+        <input type="text" id="filterSearch" placeholder="Search filters...">
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="filter-tag-cloud" id="filterTagCloud"></div>
+    </div>
+
+    <!-- Bookmarks Grid -->
+    <div id="bookmarksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <script src="../js/resources.js"></script>
+  <script src="../js/scripts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Sanitize data to prevent template breaking
+      function sanitize(str) {
+        if (typeof str !== 'string') return str || '';
+        return str.replace(/"/g, '"').replace(/`/g, '\\`');
+      }
+
+      // Render media (image or video)
+      function renderMedia(item) {
+        const thumbnail = item.media || item.thumbnail || 'https://placehold.co/600x300/FFF/F00?font=Raleway&text=No+Image&';
+        const mediaType = item.mediaType || item.media_type || 'image';
+        const altText = sanitize(item.title) || 'No title';
+        if (mediaType === 'video' && thumbnail) {
+          return `<video src="${thumbnail}" class="w-full h-full object-cover rounded-t-lg" muted autoplay loop></video>`;
+        }
+        return `<img src="${thumbnail}" alt="${altText}" class="w-full h-full object-cover rounded-t-lg" loading="lazy">`;
+      }
+
+      // Get category icon
+      function getCategoryIcon(category) {
+        const icons = {
+          'free-images': '<i class="fas fa-camera text-green-500"></i>',
+          'premium-images': '<i class="fas fa-dollar-sign text-green-500"></i>',
+          'programming': '<i class="fas fa-code text-blue-500"></i>',
+          'arabic-programming': '<i class="fas fa-laptop-code text-blue-500"></i>',
+          'design': '<i class="fas fa-paint-brush text-pink-500"></i>',
+          'english-learning': '<i class="fas fa-book-open text-yellow-500"></i>',
+          'education': '<i class="fas fa-graduation-cap text-purple-500"></i>',
+          'arabic-education': '<i class="fas fa-chalkboard-teacher text-purple-500"></i>',
+          'ai-tech': '<i class="fas fa-robot text-indigo-500"></i>',
+          'trading': '<i class="fas fa-chart-line text-green-500"></i>',
+          'content-creation': '<i class="fas fa-video text-red-500"></i>',
+          'productivity': '<i class="fas fa-tasks text-purple-500"></i>',
+          'ai-learning': '<i class="fas fa-robot text-indigo-500"></i>',
+          'references': '<i class="fas fa-book text-brown-500"></i>',
+          'ai-websites': '<i class="fas fa-robot text-indigo-500"></i>',
+          'development': '<i class="fas fa-code text-blue-500"></i>',
+          'code-editors': '<i class="fas fa-code text-blue-500"></i>',
+          'chrome-extensions': '<i class="fab fa-chrome text-green-500"></i>',
+          'ai-tools': '<i class="fas fa-robot text-indigo-500"></i>',
+          'api-tools': '<i class="fas fa-plug text-gray-500"></i>',
+          'design-tools': '<i class="fas fa-paint-brush text-pink-500"></i>',
+          'video-tools': '<i class="fas fa-video text-red-500"></i>',
+          'audio-tools': '<i class="fas fa-microphone text-blue-500"></i>',
+          'writing-tools': '<i class="fas fa-pen text-yellow-500"></i>'
+        };
+        return icons[category] || '<i class="fas fa-tag text-gray-500"></i>';
+      }
+
+      // // Show notification
+      // function showNotification(message) {
+      //   const notification = document.createElement('div');
+      //   notification.classList.add('notification');
+      //   notification.textContent = message;
+      //   document.body.appendChild(notification);
+      //   setTimeout(() => {
+      //     notification.remove();
+      //   }, 5000); // Changed from 3000 to 5000
+      // }
+
+			function showNotification(message, duration = 5000) {
+			    const notification = document.createElement('div');
+			    notification.classList.add('notification');
+			    notification.textContent = message;
+			    document.body.appendChild(notification);
+			    notification.style.animation = `bounceIn 0.3s ease-out, fadeOut 0.3s ease-in ${(duration - 300) / 1000}s forwards`;
+			    setTimeout(() => {
+			        notification.remove();
+			    }, duration);
+			}
+
+      // Render filter tag cloud
+      function renderFilterTagCloud(filter = '') {
+        const filterTagCloud = document.getElementById('filterTagCloud');
+        const categories = [
+          { name: 'all', icon: 'fa-th-large', label: 'All' },
+          { name: 'free-images', icon: 'fa-camera', label: 'Free Images' },
+          { name: 'premium-images', icon: 'fa-dollar-sign', label: 'Premium Images' },
+          { name: 'programming', icon: 'fa-code', label: 'Programming' },
+          { name: 'arabic-programming', icon: 'fa-laptop-code', label: 'Arabic Programming' },
+          { name: 'design', icon: 'fa-paint-brush', label: 'Design' },
+          { name: 'english-learning', icon: 'fa-book-open', label: 'English Learning' },
+          { name: 'education', icon: 'fa-graduation-cap', label: 'Education' },
+          { name: 'arabic-education', icon: 'fa-chalkboard-teacher', label: 'Arabic Education' },
+          { name: 'ai-tech', icon: 'fa-robot', label: 'AI & Tech' },
+          { name: 'trading', icon: 'fa-chart-line', label: 'Trading' },
+          { name: 'content-creation', icon: 'fa-video', label: 'Content Creation' },
+          { name: 'productivity', icon: 'fa-tasks', label: 'Productivity' },
+          { name: 'ai-learning', icon: 'fa-robot', label: 'AI Learning' },
+          { name: 'references', icon: 'fa-book', label: 'References' },
+          { name: 'ai-websites', icon: 'fa-robot', label: 'AI Websites' },
+          { name: 'development', icon: 'fa-code', label: 'Development' },
+          { name: 'code-editors', icon: 'fa-code', label: 'Code Editors' },
+          { name: 'chrome-extensions', icon: 'fa-chrome', label: 'Chrome Extensions' },
+          { name: 'ai-tools', icon: 'fa-robot', label: 'AI Tools' },
+          { name: 'api-tools', icon: 'fa-plug', label: 'API Tools' },
+          { name: 'design-tools', icon: 'fa-paint-brush', label: 'Design Tools' },
+          { name: 'video-tools', icon: 'fa-video', label: 'Video Tools' },
+          { name: 'audio-tools', icon: 'fa-microphone', label: 'Audio Tools' },
+          { name: 'writing-tools', icon: 'fa-pen', label: 'Writing Tools' }
+        ];
+
+        const filteredCategories = filter
+          ? categories.filter(cat => cat.label.toLowerCase().includes(filter.toLowerCase()))
+          : categories;
+
+        filterTagCloud.innerHTML = filteredCategories.map(category => `
+          <button class="filter-btn ${category.name === 'all' ? 'active' : ''}" data-filter="${category.name}">
+            <i class="fas ${category.icon}"></i> ${category.label}
+          </button>
+        `).join('');
+
+        filterTagCloud.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            filterTagCloud.querySelector('.active')?.classList.remove('active');
+            btn.classList.add('active');
+            renderBookmarks(searchInput.value, btn.dataset.filter);
+          });
+        });
+      }
+
+      // Filter search
+      const filterSearch = document.getElementById('filterSearch');
+      filterSearch.addEventListener('input', () => {
+        renderFilterTagCloud(filterSearch.value);
+      });
+
+      // Show loading spinner
+      function showLoading() {
+        bookmarksGrid.innerHTML = `
+          <div class="col-span-full flex justify-center items-center py-8">
+            <div class="spinner"></div>
+          </div>`;
+      }
+
+      // Show error message
+      function showError() {
+        bookmarksGrid.innerHTML = `
+          <p class="text-center text-red-500 dark:text-red-400 col-span-full py-8">
+            Error: Could not load resources. Please try refreshing the page.
+          </p>`;
+      }
+
+      // Render bookmarks
+      function renderBookmarks(filter = '', category = 'all') {
+        if (!window.resources) {
+          showError();
+          return;
+        }
+
+        const allResources = Object.values(window.resources).flat();
+        const bookmarkedItems = allResources.filter(item => bookmarks[item.id]).filter(item => {
+          if (category === 'all') return true;
+          return item.category === category;
+        }).filter(item =>
+          (item.title || '').toLowerCase().includes(filter.toLowerCase()) ||
+          (item.category || '').toLowerCase().includes(filter.toLowerCase()) ||
+          (item.description || '').toLowerCase().includes(filter.toLowerCase()) ||
+          (item.year || '').toString().toLowerCase().includes(filter.toLowerCase()) ||
+          (item.rating || '').toString().toLowerCase().includes(filter.toLowerCase())
+        );
+
+        if (bookmarkedItems.length === 0) {
+          bookmarksGrid.innerHTML = `
+            <div class="text-center text-gray-500 dark:text-gray-400 col-span-full py-8">
+              <i class="fas fa-bookmark text-4xl mb-4"></i>
+              <p>No bookmarks yet. Add some from the home page!</p>
+            </div>`;
+          return;
+        }
+
+        bookmarksGrid.innerHTML = bookmarkedItems.map(item => {
+          const isFeatured = item.featured ? 'featured' : '';
+          return `
+            <div class="resource-card bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col ${isFeatured}" data-id="${sanitize(item.id)}">
+              <div class="relative">
+                ${renderMedia(item)}
+                <button
+                  class="bookmark-btn ${bookmarks[item.id] ? 'bookmarked' : ''}"
+                  data-id="${sanitize(item.id)}"
+                >
+                  <i class="fas fa-bookmark"></i>
+                </button>
+              </div>
+              <div class="p-4 flex-grow">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-semibold">${sanitize(item.title || 'No Title')}</h4>
+                  <span class="tag inline-flex items-center bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm px-3 py-1 rounded-full">
+                    ${getCategoryIcon(item.category)} ${sanitize(item.category || 'Uncategorized')}
+                  </span>
+                </div>
+                <p class="description text-sm text-gray-600 dark:text-gray-300 mb-4">${sanitize(item.description || 'No description available')}</p>
+                <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                  <p><strong>ID:</strong> ${sanitize(item.id || 'N/A')}</p>
+                  <p><strong>Media Type:</strong> ${sanitize(item.mediaType || item.media_type || 'N/A')}</p>
+                  <p><strong>Media URL:</strong> <a href="${sanitize(item.media || item.thumbnail || '#')}" target="_blank" class="text-indigo-600 hover:underline">View</a></p>
+                  <p><strong>Featured:</strong> ${item.featured ? 'Yes' : 'No'}</p>
+                  <p><strong>Year:</strong> ${sanitize(item.year || 'N/A')}</p>
+                  <p><strong>Rating:</strong> ${sanitize(item.rating || 'N/A')}</p>
+                </div>
+              </div>
+              <div class="visit p-4 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                <a
+                  href="${sanitize(item.url || '#')}"
+                  target="_blank"
+                  class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <i class="fas fa-external-link-alt mr-2"></i>
+                  Visit
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // GSAP animation
+        if (typeof gsap !== 'undefined') {
+          gsap.set('.resource-card', { transform: 'none', opacity: 1 });
+          gsap.from('.resource-card:not(.featured)', {
+            opacity: 0,
+            y: 30,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out'
+          });
+          gsap.set('.resource-card.featured', { transform: 'none', opacity: 1 });
+        } else {
+          console.warn('GSAP not loaded, skipping animations');
+          document.querySelectorAll('.resource-card').forEach(card => {
+            card.style.opacity = 1;
+            card.style.transform = 'none';
+          });
+        }
+
+        // Initialize bookmark buttons with debounce
+        function debounceBookmark(func, wait) {
+          let timeout;
+          return function executedFunction(...args) {
+            const later = () => {
+              clearTimeout(timeout);
+              func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+          };
+        }
+
+        const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
+        bookmarkButtons.forEach(btn => {
+          btn.addEventListener('click', debounceBookmark(() => {
+            const id = btn.dataset.id;
+            const card = btn.closest('.resource-card');
+            const title = card.querySelector('h4').textContent;
+            const isBookmarked = btn.classList.contains('bookmarked');
+
+            if (isBookmarked) {
+              delete bookmarks[id];
+              btn.classList.remove('bookmarked');
+              showNotification(`Removed "${title}" from bookmarks`);
+            } else {
+              bookmarks[id] = true;
+              btn.classList.add('bookmarked');
+              showNotification(`Added "${title}" to bookmarks`);
+            }
+
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            const event = new CustomEvent('bookmarksChanged', { detail: { bookmarks } });
+            document.dispatchEvent(event);
+          }, 300));
+        });
+
+        // Call initBookmarks from scripts.js if it exists
+        if (typeof initBookmarks === 'function') {
+          initBookmarks();
+        } else {
+          console.warn('initBookmarks not found. Ensure scripts.js is loaded.');
+        }
+      }
+
+      // Theme toggle
+      const themeToggle = document.getElementById('themeToggle');
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+      });
+
+      // Bookmarks setup
+      const bookmarksGrid = document.getElementById('bookmarksGrid');
+      const searchInput = document.getElementById('searchInput');
+      const clearBookmarksBtn = document.getElementById('clearBookmarks');
+      let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || {};
+
+      // Debounce utility
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
+      // Search functionality
+      searchInput.addEventListener('input', debounce(() => {
+        const filter = searchInput.value;
+        const activeCategory = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+        renderBookmarks(filter, activeCategory);
+      }, 300));
+
+      // Clear bookmarks
+      clearBookmarksBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all bookmarks?')) {
+          localStorage.removeItem('bookmarks');
+          bookmarks = {};
+          showNotification('All bookmarks cleared!');
+          renderBookmarks();
+          const event = new CustomEvent('bookmarksChanged', { detail: { bookmarks } });
+          document.dispatchEvent(event);
+        }
+      });
+
+      // Update on bookmarks changed
+      document.addEventListener('bookmarksChanged', () => {
+        bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || {};
+        const activeCategory = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+        renderBookmarks(searchInput.value, activeCategory);
+      });
+
+      // Load resources with retry
+      function tryLoadResources(attempts = 5, delay = 500) {
+        showLoading();
+        if (window.resources && Object.keys(window.resources).length > 0) {
+          renderFilterTagCloud();
+          renderBookmarks();
+          return;
+        }
+        if (attempts <= 0) {
+          showError();
+          return;
+        }
+        console.log(`Retrying to load resources, attempts left: ${attempts}`);
+        setTimeout(() => tryLoadResources(attempts - 1, delay * 1.5), delay);
+      }
+
+      // Initial load
+      tryLoadResources();
+    });
+  </script>
+</body>
+</html>

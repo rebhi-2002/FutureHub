@@ -74,7 +74,7 @@ A progressive web application (PWA) designed to aggregate and organize education
 ## Project Structure
 
 ```
-project/
+File Explorer/
 ├─ FutureHub/
 │  ├─ assets/
 │  │  └─ images/

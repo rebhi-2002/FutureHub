@@ -90,7 +90,7 @@ project/
 │  ├─ pages/
 │  │  ├─ bookmarks.html    # Bookmarks page
 │  │  └─ offline.html      # Offline fallback
-│  ├─ index.html  		     # Main page
+│  ├─ index.html					 # Main page
 │  └─ README.md            # Project documentation
 ```
 

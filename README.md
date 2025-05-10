@@ -77,8 +77,8 @@ A progressive web application (PWA) designed to aggregate and organize education
 project/
 ├─ FutureHub/
 │  ├─ assets/
-│  │  ├─ images/
-│  │  │   └─ profile-placeholder.jpg
+│  │  └─ images/
+│  │     └─ profile-placeholder.jpg
 │  ├─ js/
 │  │  ├─ carousel.js       # Carousel functionality
 │  │  ├─ control.js        # Control panel features

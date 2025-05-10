@@ -226,7 +226,7 @@
     function checkConnection() {
       if (navigator.onLine) {
         showNotification('You are back online!');
-        const lastPage = localStorage.getItem('lastPage') || 'index.html';
+        const lastPage = localStorage.getItem('lastPage') || '../index.html';
         setTimeout(() => {
           window.location.href = lastPage;
         }, 1000);
@@ -244,7 +244,7 @@
     // Auto-check when coming back online
     window.addEventListener('online', () => {
       showNotification('You are back online!');
-      const lastPage = localStorage.getItem('lastPage') || 'index.html';
+      const lastPage = localStorage.getItem('lastPage') || '../index.html';
       setTimeout(() => {
         window.location.href = lastPage;
       }, 1000);

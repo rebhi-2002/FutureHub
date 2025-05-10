@@ -40,13 +40,13 @@ A progressive web application (PWA) designed to aggregate and organize education
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/repo-name.git
+   git clone https://github.com/rebhi-2002/FutureHub.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd repo-name
+   cd FutureHub
    ```
 
 3. Install dependencies (if using npm for external libraries):
@@ -82,30 +82,23 @@ A progressive web application (PWA) designed to aggregate and organize education
 
 ```
 project/
-├── src/
-│   ├── assets/
-│   │   ├── images/
-│   │   │   └── profile-placeholder.jpg
-│   ├── js/
-│   │   ├── modules/
-│   │   │   ├── carousel.js        # Carousel functionality
-│   │   │   ├── control.js        # Control panel features
-│   │   │   ├── bookmarks.js      # Bookmark management
-│   │   │   ├── search.js         # Search functionality
-│   │   │   ├── theme.js          # Theme toggle
-│   │   │   └── notifications.js  # Notification system
-│   │   └── scripts.js            # Main script integration
-│   ├── css/
-│   │   ├── styles.css            # Main styles
-│   │   └── styles-1.css          # Additional styles
-│   └── data/
-│       └── resources.json        # Resource data
-├── pages/
-│   ├── index.html                # Main page
-│   ├── bookmarks.html            # Bookmarks page
-│   └── offline.html              # Offline fallback
-├── package.json                  # Project dependencies
-└── README.md                     # Project documentation
+├─ FutureHub/
+│  ├─ assets/
+│  │  ├─ images/
+│  │  │   └─ profile-placeholder.jpg
+│  ├─ js/
+│  │  ├─ carousel.js       # Carousel functionality
+│  │  ├─ control.js        # Control panel features
+│  │  ├─ scripts.js        # Main script integration
+│  │  ├─ resources.json    # Resource data
+│  │  └─ data.js
+│  ├─ css/
+│  │  └─ styles.css        # Main styles
+│	 ├─ pages/
+│  │  ├─ bookmarks.html    # Bookmarks page
+│  │  └─ offline.html      # Offline fallback
+│  ├─ index.html  		     # Main page
+│  └─ README.md            # Project documentation
 ```
 
 ## Contributing

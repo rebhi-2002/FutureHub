@@ -92,6 +92,8 @@ File Explorer/
 │  │  └─ offline.html      # Offline fallback
 │  ├─ index.html           # Main page
 │  └─ README.md            # Project documentation
+├─ ...
+│
 ```
 
 ## Contributing

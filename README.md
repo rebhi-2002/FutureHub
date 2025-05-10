@@ -49,23 +49,16 @@ A progressive web application (PWA) designed to aggregate and organize education
    cd FutureHub
    ```
 
-3. Install dependencies (if using npm for external libraries):
+3. Serve the project using one of these methods:
 
-   ```bash
-   npm install
-   ```
+  - **Option 1: Using a local server** (recommended for full functionality, e.g., PWA features):
+    ```bash
+    npx serve
+    ```
+    This will serve the project on a local server (typically at `http://localhost:3000`).
 
-4. Serve the project using a local server (e.g., with `live-server` or Python):
-
-   ```bash
-   npx live-server
-   ```
-
-   OR
-
-   ```bash
-   python -m http.server 8000
-   ```
+  - **Option 2: Open directly in the browser** (for simple HTML viewing):
+    Navigate to the `FutureHub` folder and double-click `index.html` to open it in your default web browser. Note: Some features (e.g., service worker for offline support) may require a local server.
 
 ## Usage
 

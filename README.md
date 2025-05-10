@@ -87,7 +87,7 @@ project/
 │  │  └─ data.js
 │  ├─ css/
 │  │  └─ styles.css        # Main styles
-│	 ├─ pages/
+│  ├─ pages/
 │  │  ├─ bookmarks.html    # Bookmarks page
 │  │  └─ offline.html      # Offline fallback
 │  ├─ index.html  		     # Main page

@@ -1,1 +1,125 @@
-# FutureHub
+# Educational Resources Web App
+
+A progressive web application (PWA) designed to aggregate and organize educational resources with a modern, user-friendly interface. The app features a carousel for browsing resources, bookmarking functionality, search, category/tag filtering, dark/light mode, and offline support.
+
+## Table of Contents
+
+- Features
+- Technologies Used
+- Installation
+- Usage
+- Project Structure
+- Contributing
+- License
+
+## Features
+
+- **Resource Carousel**: Displays categorized educational resources with smooth animations powered by GSAP.
+- **Bookmarking System**: Save and manage favorite resources using localStorage.
+- **Search Functionality**: Fuzzy search across resources using Fuse.js.
+- **Category & Tag Filtering**: Filter resources by categories (e.g., programming, AI tools) and tags.
+- **Dark/Light Mode**: Toggle between themes with persistent user preferences.
+- **Responsive Design**: Optimized for desktop and mobile devices using Tailwind CSS.
+- **Offline Support**: Basic offline functionality with a custom offline page.
+- **Network Status Detection**: Displays online/offline status.
+- **Export Bookmarks**: Export bookmarks as an organized HTML file.
+
+## Technologies Used
+
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Libraries/Frameworks**:
+  - Tailwind CSS: Styling
+  - GSAP: Animations
+  - Fuse.js: Fuzzy search
+  - Font Awesome: Icons
+- **Storage**: localStorage for bookmarks and user preferences
+- **PWA**: Service Worker for offline support
+
+## Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/repo-name.git
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd repo-name
+   ```
+
+3. Install dependencies (if using npm for external libraries):
+
+   ```bash
+   npm install
+   ```
+
+4. Serve the project using a local server (e.g., with `live-server` or Python):
+
+   ```bash
+   npx live-server
+   ```
+
+   OR
+
+   ```bash
+   python -m http.server 8000
+   ```
+
+## Usage
+
+- Open the app in a browser to browse educational resources.
+- Use the carousel to navigate through featured resources.
+- Bookmark resources by clicking the bookmark icon on cards.
+- Filter resources by category or tags using the filter bar.
+- Search for resources using the search input.
+- Toggle between dark/light mode via the theme toggle.
+- Export bookmarks as an HTML file from the hero section.
+- Test offline functionality by disabling your network connection.
+
+## Project Structure
+
+```
+project/
+├── src/
+│   ├── assets/
+│   │   ├── images/
+│   │   │   └── profile-placeholder.jpg
+│   ├── js/
+│   │   ├── modules/
+│   │   │   ├── carousel.js        # Carousel functionality
+│   │   │   ├── control.js        # Control panel features
+│   │   │   ├── bookmarks.js      # Bookmark management
+│   │   │   ├── search.js         # Search functionality
+│   │   │   ├── theme.js          # Theme toggle
+│   │   │   └── notifications.js  # Notification system
+│   │   └── scripts.js            # Main script integration
+│   ├── css/
+│   │   ├── styles.css            # Main styles
+│   │   └── styles-1.css          # Additional styles
+│   └── data/
+│       └── resources.json        # Resource data
+├── pages/
+│   ├── index.html                # Main page
+│   ├── bookmarks.html            # Bookmarks page
+│   └── offline.html              # Offline fallback
+├── package.json                  # Project dependencies
+└── README.md                     # Project documentation
+```
+
+## Contributing
+
+We welcome contributions! To contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature`).
+3. Make your changes and commit (`git commit -m "Add your feature"`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a pull request with a detailed description of your changes.
+
+Please ensure your code follows the project's coding standards and includes appropriate comments.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
